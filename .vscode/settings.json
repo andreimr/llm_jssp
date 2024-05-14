@@ -4,5 +4,7 @@
         "llm_jssp"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [".","-s"],
+    "python.testing.autoTestDiscoverOnSaveEnabled": true
 }

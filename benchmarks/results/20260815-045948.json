@@ -1,0 +1,143 @@
+{
+  "model": "claude-opus-5",
+  "results": [
+    {
+      "instance": "ft06",
+      "family": "jsp",
+      "known_optimum": 55,
+      "claimed_objective": 55.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "wall_s": 149.4,
+      "input_tokens": 43369,
+      "output_tokens": 12359,
+      "cache_read_tokens": 21459,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.537,
+      "final_text_tail": "machine, objective `min max(end of last op)`. Horizon 197. Simple bounds give C_max \u2265 47 (job 1's workload); the search proved the true optimum 55.\n\n**Verification:** independently re-parsed the file and re-checked all 36 operations, 30 precedence constraints and 6 machine sequences \u2014 feasible, makespan 55, and optimality confirmed by an infeasibility proof at 54. Verdict: VERIFIED.\n\nOBJECTIVE: 55",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-044300-2ow58n7h"
+    },
+    {
+      "instance": "la01",
+      "family": "jsp",
+      "known_optimum": 666,
+      "claimed_objective": 666.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "wall_s": 179.1,
+      "input_tokens": 56342,
+      "output_tokens": 15554,
+      "cache_read_tokens": 23233,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.682,
+      "final_text_tail": "overlaps, makespan recomputed as 666; an independent CP\u2011SAT re-solve also returned OPTIMAL 666. Verdict: VERIFIED.\n\n**Model:** 50 fixed-duration interval variables (one per operation), precedence chains within each job, `add_no_overlap` per machine (unary capacity, no preemption), makespan = max job completion, minimized with OR-Tools CP\u2011SAT. Full schedule saved to `solution.json`.\n\nOBJECTIVE: 666",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-044529-if8iqwq4"
+    },
+    {
+      "instance": "orb01",
+      "family": "jsp",
+      "known_optimum": 1059,
+      "claimed_objective": 1059.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 13,
+      "tool_errors": 1,
+      "wall_s": 240.5,
+      "input_tokens": 67482,
+      "output_tokens": 15733,
+      "cache_read_tokens": 24120,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.743,
+      "final_text_tail": " no preemption; releases at 0.\n- **Objective:** minimize the max completion time; solved with OR-Tools CP-SAT (~17 s, status OPTIMAL, bound 1059).\n\n**Verification:** independently re-parsed the file and re-checked all 100 operations \u2014 routes, durations, precedences and machine non-overlap all hold, max end = 1059, and a re-solve capped at 1058 proved infeasible. Verdict: VERIFIED.\n\nOBJECTIVE: 1059",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-044828-9_yswhkh"
+    },
+    {
+      "instance": "mknap01_2",
+      "family": "mknap",
+      "known_optimum": 8706.1,
+      "claimed_objective": 8706.1,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 13,
+      "tool_errors": 0,
+      "wall_s": 118.7,
+      "input_tokens": 43706,
+      "output_tokens": 9458,
+      "cache_read_tokens": 24165,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.467,
+      "final_text_tail": " p_j x_j subject to 10 knapsack constraints \u03a3 A[i][j] x_j \u2264 b[i]. Profits were scaled \u00d710 to keep CP-SAT's arithmetic exact (87061 scaled \u2192 8706.1). The header's \"best-known value\" field was never used in the solve.\n\n**Verification:** independently re-parsed the file and re-checked feasibility, objective, and optimality by exact-rational brute force \u2014 VERIFIED, no discrepancies.\n\nOBJECTIVE: 8706.1",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-045229-6ylm9xkj"
+    },
+    {
+      "instance": "mknap01_5",
+      "family": "mknap",
+      "known_optimum": 12400,
+      "claimed_objective": 12400.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "wall_s": 167.8,
+      "input_tokens": 66183,
+      "output_tokens": 13362,
+      "cache_read_tokens": 25052,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.677,
+      "final_text_tail": "item at most once.\n- Data was re-parsed from `mknap01_5.txt` (321 tokens, exact fit); the header's best-known field was read and discarded, never used as a bound, hint, or stopping rule.\n\n**Verification:** independent re-parse and re-solve by the Verifier (CP-SAT, SCIP, CBC all return 12,400 with the same item set; feasibility recomputed by hand) \u2014 **VERIFIED**, no discrepancies.\n\nOBJECTIVE: 12400",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-045427-vhbnjr6z"
+    },
+    {
+      "instance": "mknap01_7",
+      "family": "mknap",
+      "known_optimum": 16537,
+      "claimed_objective": 16537.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 15,
+      "tool_errors": 0,
+      "wall_s": 152.8,
+      "input_tokens": 69104,
+      "output_tokens": 11984,
+      "cache_read_tokens": 26740,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.658,
+      "final_text_tail": " confirm feasibility and optimality at 16,537. Verdict: VERIFIED. The header's best-known value was never used as a bound or hint; the optimum was derived from scratch and happens to match it.\n\n**Model (brief):** binary x_i for each of the 50 items; maximize \u03a3 p_i x_i subject to \u03a3_i A_ri x_i \u2264 b_r for the 5 resource rows, b = (800, 650, 550, 550, 650). 50 binaries, 5 constraints.\n\nOBJECTIVE: 16537",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-045715-xinabptl"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "optimist"
+version = "0.2.0"
+description = "Multi-agent assistant that turns natural-language optimization and scheduling problems into solved, verified OR-Tools models"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Andrei Rotenstein", email = "rotenstein.andrei.v+jssp@gmail.com" }]
+requires-python = ">=3.11"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "anthropic>=0.40",
+    "openai>=1.40",
+    "ortools>=9.8",
+    "rich>=13.7",
+    "prompt_toolkit>=3.0.43",
+    "pydantic>=2.6",
+    "pypdf>=4.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+optimist = "optimist.cli.app:main"
+
+[project.urls]
+Homepage = "https://github.com/andreimr/llm_jssp"
+
+[tool.setuptools.packages.find]
+include = ["optimist", "optimist.*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]

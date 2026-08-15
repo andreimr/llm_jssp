@@ -1,0 +1,82 @@
+[
+  {
+    "instance": "ft06",
+    "case": "control",
+    "expected": "VERIFIED",
+    "verdict": "VERIFIED",
+    "correct": true,
+    "wall_s": 36.2,
+    "est_cost_usd": 0.13,
+    "detail_tail": "pan \u2264 54 exists. This also matches the literature optimum for ft06 (55).\n\n**Fidelity:** the formulation used (job-order chains + machine no-overlap + makespan minimization) captures exactly the stated requirements; no constraints dropped, no invented data, correct direction.\n\nNo discrepancies found."
+  },
+  {
+    "instance": "ft06",
+    "case": "wrong_obj",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 46.6,
+    "est_cost_usd": 0.181,
+    "detail_tail": "reported objective value is wrong.\n\n**4. Sanity.** Lower-bound cross-check: machine 4 total load = 6+10+7+8+5+4 = 40; longest job (J1) = 47; both \u2264 55, consistent. No improving move exists since 55 is proven optimal.\n\n**Required correction:** report makespan = 55 (schedule unchanged, it is optimal)."
+  },
+  {
+    "instance": "ft06",
+    "case": "infeasible",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 46.0,
+    "est_cost_usd": 0.181,
+    "detail_tail": "e passes all data, precedence and no-overlap checks.\n\n**Conclusion:** the claimed *objective value* 55 is optimal, but the submitted *schedule as printed is infeasible* (machine-2 capacity violated by 1 time unit at t\u2208[0,1)). It must be corrected (e.g. job 0 op 0 \u2192 start 5, end 6) before acceptance."
+  },
+  {
+    "instance": "ft06",
+    "case": "suboptimal",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 44.9,
+    "est_cost_usd": 0.177,
+    "detail_tail": "5 on m4 = [48,55], j3o5 on m5 = [45,54], j4o5 on m3 = [52,53].\n\n**Discrepancy:** the claimed solution is feasible but suboptimal by **7 time units** (62 vs. optimal 55), and the claim \"Status: OPTIMAL (proven)\" is false \u2014 the true optimal bound is 55, so no valid proof of optimality at 62 can exist."
+  },
+  {
+    "instance": "mknap01_2",
+    "case": "control",
+    "expected": "VERIFIED",
+    "verdict": "VERIFIED",
+    "correct": true,
+    "wall_s": 19.6,
+    "est_cost_usd": 0.066,
+    "detail_tail": "constraint.\n\n**4. Optimality** \u2014 Independent exhaustive enumeration of all 2^10 = 1024 subsets: maximum feasible profit = 8706.1, attained by exactly the set [1, 3, 4, 7, 9]. So the claim of OPTIMAL is proven correct (and coincides with the file's reported best-known value).\n\nNo discrepancies found."
+  },
+  {
+    "instance": "mknap01_2",
+    "case": "wrong_obj",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 22.6,
+    "est_cost_usd": 0.076,
+    "detail_tail": "4. Optimality probe.** Complete brute-force over all 1024 subsets: maximum feasible profit = **8706.1**, attained by exactly the set (1, 3, 4, 7, 9). So the *chosen items* are genuinely optimal (and match the file's best-known 8706.1), but the *claimed objective value* 9228.466 is wrong by +522.366."
+  },
+  {
+    "instance": "mknap01_2",
+    "case": "infeasible",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 29.5,
+    "est_cost_usd": 0.115,
+    "detail_tail": "im of profit 9306.2 with status \"OPTIMAL (proven)\" is refuted \u2014 the point is infeasible, and the true optimum is 8706.1 (600.1 lower). The claimed solution is not merely suboptimal; it violates 7 knapsack constraints, indicating capacities/constraint rows were mishandled in the formulation or solve."
+  },
+  {
+    "instance": "mknap01_2",
+    "case": "suboptimal",
+    "expected": "ISSUES FOUND",
+    "verdict": "ISSUES FOUND",
+    "correct": true,
+    "wall_s": 19.7,
+    "est_cost_usd": 0.069,
+    "detail_tail": "imple: swapping items {2,5,6} out for {7,9} keeps feasibility and gains profit.\n\n4. **Fidelity** \u2014 the model (maximize profit s.t. all m rows \u2264 capacity, binary x) matches the statement; direction is maximize, which is correct. The error is not in the formulation but in the reported solution/status."
+  }
+]

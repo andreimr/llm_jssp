@@ -1,0 +1,145 @@
+{
+  "model": "claude-sonnet-5",
+  "results": [
+    {
+      "instance": "ft06",
+      "family": "jsp",
+      "known_optimum": 55,
+      "claimed_objective": 55.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 13,
+      "tool_errors": 3,
+      "wall_s": 129.1,
+      "input_tokens": 72706,
+      "output_tokens": 14351,
+      "cache_read_tokens": 13357,
+      "cache_write_tokens": 6053,
+      "est_cost_usd": 0.46,
+      "final_text_tail": "hecked every job's operation sequence and durations against the schedule, confirmed no precedence violations and no machine overlaps anywhere, recomputed the makespan directly from the schedule (=55), and independently re-solved the model from scratch with CP-SAT, again proving optimum = 55. Verdict: **VERIFIED**. This also matches the well-known published optimal makespan for ft06.\n\nOBJECTIVE: 55",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-050236-bdcz6_iz"
+    },
+    {
+      "instance": "la01",
+      "family": "jsp",
+      "known_optimum": 666,
+      "claimed_objective": 666.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 13,
+      "tool_errors": 2,
+      "wall_s": 153.0,
+      "input_tokens": 88035,
+      "output_tokens": 16605,
+      "cache_read_tokens": 19410,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.519,
+      "final_text_tail": "parsed la01.txt, confirmed every operation's machine/duration matches the instance, checked all job-precedence and machine-no-overlap constraints hold with zero violations, recomputed the makespan as 666, and independently re-solved the same CP-SAT model from scratch \u2014 reproducing status OPTIMAL with objective 666 and matching best bound 666. **Verdict: VERIFIED**, no issues found.\n\nOBJECTIVE: 666",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-050445-nhybskgf"
+    },
+    {
+      "instance": "orb01",
+      "family": "jsp",
+      "known_optimum": 1059,
+      "claimed_objective": 1059.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "MISSING",
+        "VERIFIED"
+      ],
+      "tool_calls": 15,
+      "tool_errors": 4,
+      "wall_s": 170.4,
+      "input_tokens": 103266,
+      "output_tokens": 12433,
+      "cache_read_tokens": 24958,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.504,
+      "final_text_tail": " recomputed the makespan directly from the schedule (=1059), and independently re-solved the same CP-SAT model from scratch, obtaining the identical optimal objective and matching bound. Verdict: **VERIFIED**.\n\nThe full optimal schedule (start/end time for every operation, every job/machine) is saved in `solution.json` in the working directory if you'd like the detailed timetable.\n\nOBJECTIVE: 1059",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-050718-owp__7_q"
+    },
+    {
+      "instance": "mknap01_2",
+      "family": "mknap",
+      "known_optimum": 8706.1,
+      "claimed_objective": 8706.1,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 3,
+      "tool_errors": 0,
+      "wall_s": 30.5,
+      "input_tokens": 12305,
+      "output_tokens": 3250,
+      "cache_read_tokens": 8322,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.088,
+      "final_text_tail": "0 |\n| 10 | 327.0 |\n| **Total** | **8706.1** |\n\nAll 10 knapsack constraints are satisfied (two are nearly tight: constraint 2 uses 539/540 capacity, constraint 10 uses 470/480).\n\n**Status:** Optimal, proven by exhaustive search over all 1024 subsets (exact, not heuristic).\n**Verification:** VERIFIED \u2014 independent brute-force check confirmed both feasibility and global optimality.\n\nOBJECTIVE: 8706.1",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-051008-1amnbea1"
+    },
+    {
+      "instance": "mknap01_5",
+      "family": "mknap",
+      "known_optimum": 12400,
+      "claimed_objective": 12400.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "MISSING",
+        "VERIFIED"
+      ],
+      "tool_calls": 23,
+      "tool_errors": 9,
+      "wall_s": 128.1,
+      "input_tokens": 140806,
+      "output_tokens": 14058,
+      "cache_read_tokens": 19418,
+      "cache_write_tokens": 0,
+      "est_cost_usd": 0.639,
+      "final_text_tail": "nd-bound MILP (OR-Tools), reaching provable optimality (status OPTIMAL), cross-checked with a second solver by the Verifier \u2014 no heuristics, no time-limit cutoffs.\n\nNote: the reported \"opt\" value in the file header (12400) was deliberately ignored during solving/verification and was only used afterward as a sanity coincidence \u2014 our result was derived independently and matches it.\n\nOBJECTIVE: 12400",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-051039-3khx901z"
+    },
+    {
+      "instance": "mknap01_7",
+      "family": "mknap",
+      "known_optimum": 16537,
+      "claimed_objective": 16537.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 16,
+      "tool_errors": 4,
+      "wall_s": 120.1,
+      "input_tokens": 69979,
+      "output_tokens": 10330,
+      "cache_read_tokens": 27685,
+      "cache_write_tokens": 1523,
+      "est_cost_usd": 0.379,
+      "final_text_tail": "ind exactly at capacity, which is what pins the optimum \u2014 no further items can be added without violating one of these.\n\n**Verification:** An independent CP-SAT run from the raw file data (ignoring the file's own reported best-known value) confirmed feasibility of every constraint and reproduced the same objective of 16537 as a proven optimum. Verdict: VERIFIED, no discrepancies.\n\nOBJECTIVE: 16537",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-051247-f61ns3u0"
+    }
+  ]
+}

@@ -216,7 +216,9 @@ class AnthropicProvider(Provider):
         message = Message(
             role="assistant",
             content=blocks,
-            raw={"content": [cb.model_dump() for cb in final.content]},
+            # exclude_none: response blocks carry output-only fields (e.g.
+            # citations/parsed_output as None) that the API rejects as input.
+            raw={"content": [cb.model_dump(exclude_none=True) for cb in final.content]},
             provider="anthropic",
         )
         refusal_explanation = ""

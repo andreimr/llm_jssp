@@ -148,3 +148,15 @@ def test_adaptive_thinking_gate():
     assert supports_adaptive_thinking("claude-opus-5")
     assert supports_adaptive_thinking("claude-fable-5")
     assert not supports_adaptive_thinking("claude-haiku-4-5")
+
+
+def test_raw_content_dump_has_no_none_fields():
+    # Response blocks carry output-only fields as None (citations,
+    # parsed_output, ...); replaying them as input causes a 400. The provider
+    # stores raw content with exclude_none, mirrored here.
+    from anthropic.types import TextBlock as SDKTextBlock
+
+    block = SDKTextBlock(type="text", text="hello")
+    dumped = block.model_dump(exclude_none=True)
+    assert dumped == {"type": "text", "text": "hello"}
+    assert "citations" not in dumped

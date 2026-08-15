@@ -77,9 +77,9 @@ def solve_mknap(
     solver = pywraplp.Solver.CreateSolver("SCIP")
     assert solver is not None
     x = [solver.BoolVar(f"x{i}") for i in range(len(profits))]
-    for row, cap in zip(rows, capacities):
-        solver.Add(solver.Sum(c * xi for c, xi in zip(row, x)) <= cap)
-    solver.Maximize(solver.Sum(p * xi for p, xi in zip(profits, x)))
+    for row, cap in zip(rows, capacities, strict=True):
+        solver.Add(solver.Sum(c * xi for c, xi in zip(row, x, strict=True)) <= cap)
+    solver.Maximize(solver.Sum(p * xi for p, xi in zip(profits, x, strict=True)))
     solver.SetTimeLimit(120_000)
     status = solver.Solve()
     name = "OPTIMAL" if status == pywraplp.Solver.OPTIMAL else str(status)

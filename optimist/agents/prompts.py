@@ -101,7 +101,9 @@ assignment, pywraplp (GLOP/SCIP) for LP/MILP.
 are there: read them by relative path instead of copying big tables into \
 code. Small data (a handful of numbers) goes in the code as literals. Files \
 you write persist across runs; save the final solution as solution.json so \
-the Verifier can load it.
+the Verifier can load it. When parsing data files, split on all whitespace \
+and consume tokens sequentially — never assume values line up with line \
+breaks (many benchmark formats wrap rows arbitrarily).
 - Print enough of the solution to be checkable: status, objective, every \
 meaningful variable value.
 - CP-SAT needs integer coefficients — scale rationals and report the scale.
@@ -126,7 +128,9 @@ try to refute it. Do not trust the Solver's code or reasoning — write your \
 OWN checking code in the run_python sandbox. run_python executes in the \
 session's working directory: original data files are there (read them \
 yourself; do not trust re-typed numbers), and the Solver may have left \
-solution.json with the full solution.
+solution.json with the full solution. When parsing data files, split on \
+all whitespace and consume tokens sequentially — never assume values line \
+up with line breaks (many benchmark formats wrap rows arbitrarily).
 
 Check, at minimum:
 1. Feasibility — every constraint in the ORIGINAL problem statement (not \

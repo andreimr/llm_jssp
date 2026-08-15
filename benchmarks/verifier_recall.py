@@ -103,11 +103,11 @@ def solve_mknap_full(profits, rows, caps, forbid=None):
 
     solver = pywraplp.Solver.CreateSolver("SCIP")
     x = [solver.BoolVar(f"x{i}") for i in range(len(profits))]
-    for row, cap in zip(rows, caps):
-        solver.Add(solver.Sum(c * xi for c, xi in zip(row, x)) <= cap)
+    for row, cap in zip(rows, caps, strict=True):
+        solver.Add(solver.Sum(c * xi for c, xi in zip(row, x, strict=True)) <= cap)
     if forbid is not None:
         solver.Add(x[forbid] == 0)
-    solver.Maximize(solver.Sum(p * xi for p, xi in zip(profits, x)))
+    solver.Maximize(solver.Sum(p * xi for p, xi in zip(profits, x, strict=True)))
     status = solver.Solve()
     assert status == pywraplp.Solver.OPTIMAL
     chosen = [i for i in range(len(profits)) if x[i].solution_value() > 0.5]
@@ -177,7 +177,7 @@ def mknap_cases(name: str) -> list[Case]:
         if i in chosen:
             continue
         usage_ok = all(
-            sum(row[j] for j in [*chosen, i]) <= cap for row, cap in zip(rows, caps)
+            sum(row[j] for j in [*chosen, i]) <= cap for row, cap in zip(rows, caps, strict=True)
         )
         if not usage_ok:
             violator = i

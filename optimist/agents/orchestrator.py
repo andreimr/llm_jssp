@@ -18,17 +18,29 @@ survive a lossy retelling by the orchestrator.
 from __future__ import annotations
 
 import json
+import shutil
+import tempfile
 from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
 
+from optimist import recipes
 from optimist.agents import prompts
 from optimist.agents.runtime import UI, Agent, AgentRunner, NullUI
+from optimist.attachments import (
+    AttachmentError,
+    data_file_preview,
+    is_data_file,
+    load_attachment,
+)
 from optimist.config import Settings, provider_for, strip_model_prefix
 from optimist.messages import (
     ContentBlock,
     Message,
+    PdfBlock,
     TextBlock,
     ToolSpec,
     Usage,
@@ -52,11 +64,36 @@ RUN_PYTHON_SCHEMA = {
 RUN_PYTHON_TOOL = ToolSpec(
     name="run_python",
     description=(
-        "Execute Python code in an isolated subprocess and return stdout/stderr. "
-        "Google OR-Tools (ortools) is installed. No network access should be "
-        "assumed. Print everything you need to see."
+        "Execute Python code in a subprocess and return stdout/stderr. Google "
+        "OR-Tools (ortools) is installed. No network access should be assumed. "
+        "The code runs in the session's persistent working directory: attached "
+        "data files are there (read them by relative path), and files you write "
+        "(intermediate data, solution.json) survive for later runs. Print "
+        "everything you need to see."
     ),
     input_schema=RUN_PYTHON_SCHEMA,
+)
+
+READ_RECIPE_TOOL = ToolSpec(
+    name="read_recipe",
+    description=(
+        "Read a verified OR-Tools cookbook recipe: current API idioms plus a "
+        "complete tested example for a problem class. Consult the relevant "
+        "recipe BEFORE writing solver code; training-data recollections of "
+        "OR-Tools APIs are often outdated. Available recipes:\n"
+        + recipes.recipe_catalog()
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "enum": sorted(recipes.RECIPES),
+                "description": "Recipe name.",
+            }
+        },
+        "required": ["name"],
+    },
 )
 
 
@@ -153,6 +190,72 @@ class Session:
     history: list[Message] = field(default_factory=list)
     pending_attachments: list[ContentBlock] = field(default_factory=list)
     all_attachments: list[ContentBlock] = field(default_factory=list)
+    _workspace: Path | None = None
+
+    # -- workspace ------------------------------------------------------------
+
+    @property
+    def workspace(self) -> Path:
+        """The session's persistent working directory (created on first use).
+
+        All run_python calls execute here; attachments are saved here; solver
+        artifacts written here survive across runs within the session.
+        """
+        if self._workspace is None:
+            stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            root = self.settings.workspace_root
+            root.mkdir(parents=True, exist_ok=True)
+            self._workspace = Path(tempfile.mkdtemp(prefix=f"{stamp}-", dir=root))
+        return self._workspace
+
+    def workspace_files(self) -> list[Path]:
+        if self._workspace is None or not self._workspace.is_dir():
+            return []
+        return sorted(
+            p for p in self._workspace.iterdir()
+            if p.is_file() and not p.name.startswith("_optimist_run_")
+        )
+
+    def _workspace_manifest(self) -> str:
+        files = self.workspace_files()
+        if not files:
+            return ""
+        rows = "\n".join(f"  {p.name}  ({p.stat().st_size:,} bytes)" for p in files)
+        return (
+            "Files currently in the working directory (run_python executes there; "
+            f"read them by relative path):\n{rows}"
+        )
+
+    def add_file(self, path: str | Path) -> str:
+        """Attach a file: documents/images become content blocks, data files
+        become workspace files with a preview block. Returns a description
+        for the UI. Raises AttachmentError on unsupported/missing files."""
+        p = Path(path).expanduser()
+        if is_data_file(p):
+            if not p.is_file():
+                raise AttachmentError(f"No such file: {p}")
+            dest = self.workspace / p.name
+            shutil.copyfile(p, dest)
+            preview = data_file_preview(dest)
+            self.pending_attachments.append(
+                TextBlock(
+                    f"<attached_data_file name={p.name!r} workspace_path='./{p.name}'>\n"
+                    f"{preview}\n</attached_data_file>\n"
+                    "(The full file is in the working directory; solver code should "
+                    "read it from there rather than relying on this preview.)"
+                )
+            )
+            return f"{p.name} → workspace (solver code reads it as ./{p.name})"
+        block = load_attachment(p)
+        # Keep a raw copy (and extracted text for PDFs) where solver code can reach it.
+        dest = self.workspace / Path(p).name
+        shutil.copyfile(p, dest)
+        if isinstance(block, PdfBlock) and block.extracted_text:
+            (self.workspace / f"{dest.stem}.extracted.txt").write_text(
+                block.extracted_text, encoding="utf-8"
+            )
+        self.pending_attachments.append(block)
+        return f"{p.name} (sent with your next message; raw copy in workspace)"
 
     # -- model plumbing -----------------------------------------------------
 
@@ -172,10 +275,17 @@ class Session:
         tools: list[ToolSpec] | None = None, max_turns: int = 12,
         include_attachments: bool = True,
     ) -> str:
+        manifest = self._workspace_manifest()
+        if manifest:
+            first_message = f"{first_message}\n\n{manifest}"
         blocks: list[ContentBlock] = [TextBlock(first_message)]
         if include_attachments and self.all_attachments:
             blocks.extend(self.all_attachments)
-        handlers = {"run_python": self._handle_run_python} if tools else {}
+        available = {
+            "run_python": self._handle_run_python,
+            "read_recipe": self._handle_read_recipe,
+        }
+        handlers = {t.name: available[t.name] for t in (tools or []) if t.name in available}
         agent = Agent(name=name, system=system, tools=tools or [], handlers=handlers)
         runner = self._runner(self.settings.effective_subagent_model())
         messages = [Message(role="user", content=blocks)]
@@ -191,7 +301,8 @@ class Session:
         notes = tool_input.get("notes", "")
         message = statement if not notes else f"{statement}\n\nAdditional notes:\n{notes}"
         return self._run_subagent(
-            "Formulator", prompts.FORMULATOR, message, max_turns=2
+            "Formulator", prompts.FORMULATOR, message,
+            tools=[READ_RECIPE_TOOL], max_turns=4,
         ), False
 
     def _handle_solve(self, tool_input: dict[str, Any]) -> tuple[str, bool]:
@@ -206,7 +317,8 @@ class Session:
                 f"verifier) — address them:\n{issues}"
             )
         return self._run_subagent(
-            "Solver", prompts.SOLVER, message, tools=[RUN_PYTHON_TOOL], max_turns=14
+            "Solver", prompts.SOLVER, message,
+            tools=[RUN_PYTHON_TOOL, READ_RECIPE_TOOL], max_turns=14,
         ), False
 
     def _handle_verify(self, tool_input: dict[str, Any]) -> tuple[str, bool]:
@@ -238,12 +350,22 @@ class Session:
             "ERROR",
         )
 
+    def _handle_read_recipe(self, tool_input: dict[str, Any]) -> tuple[str, bool]:
+        name = str(tool_input.get("name", ""))
+        try:
+            return recipes.read_recipe(name), False
+        except KeyError:
+            return (
+                f"Unknown recipe {name!r}. Available: {', '.join(sorted(recipes.RECIPES))}",
+                True,
+            )
+
     def _handle_run_python(self, tool_input: dict[str, Any]) -> tuple[str, bool]:
         code = tool_input.get("code", "")
         if not code.strip():
             return "run_python requires non-empty code.", True
         timeout = int(tool_input.get("timeout_s") or self.settings.sandbox_timeout_s)
-        result = sandbox.run_python(code, timeout_s=timeout)
+        result = sandbox.run_python(code, timeout_s=timeout, workdir=self.workspace)
         return result.as_tool_result()
 
     # -- public API ----------------------------------------------------------
@@ -264,6 +386,9 @@ class Session:
 
     def ask(self, user_input: str) -> str:
         """Send one user message through the orchestrator; returns final text."""
+        manifest = self._workspace_manifest()
+        if manifest:
+            user_input = f"{user_input}\n\n<workspace_note>\n{manifest}\n</workspace_note>"
         blocks: list[ContentBlock] = [TextBlock(user_input)]
         if self.pending_attachments:
             blocks.extend(self.pending_attachments)
@@ -277,3 +402,4 @@ class Session:
         self.history.clear()
         self.pending_attachments.clear()
         self.all_attachments.clear()
+        self._workspace = None  # a fresh conversation gets a fresh workspace

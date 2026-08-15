@@ -17,7 +17,7 @@ from rich.text import Text
 
 from optimist import __version__
 from optimist.agents.orchestrator import Session
-from optimist.attachments import AttachmentError, load_attachment
+from optimist.attachments import AttachmentError
 from optimist.cli.render import RichUI
 from optimist.config import Settings, provider_for
 from optimist.messages import ImageBlock, PdfBlock, TextBlock
@@ -26,7 +26,7 @@ from optimist.providers.base import ProviderError
 
 COMMANDS = [
     "/help", "/model", "/models", "/subagent-model", "/attach", "/attachments",
-    "/clear", "/save", "/usage", "/thinking", "/exit", "/quit",
+    "/workspace", "/clear", "/save", "/usage", "/thinking", "/exit", "/quit",
 ]
 
 BANNER = """\
@@ -40,8 +40,10 @@ HELP = """\
 [bold]/model \\[id][/bold]           show or set the model (claude-*, or vendor/model via OpenRouter)
 [bold]/models \\[filter][/bold]      list available models (Anthropic + OpenRouter)
 [bold]/subagent-model \\[id][/bold]  set a cheaper/faster model for the sub-agents ("" = same)
-[bold]/attach <path>[/bold]        attach a PDF or image to your next message
+[bold]/attach <path>[/bold]        attach a PDF/image (model-visible) or a data file
+                      (.csv/.json/.txt — copied to the workspace for solver code)
 [bold]/attachments[/bold]          list attachments in this session
+[bold]/workspace[/bold]            show the session working directory and its files
 [bold]/clear[/bold]                start a fresh conversation
 [bold]/save \\[path][/bold]          save the transcript as markdown
 [bold]/usage[/bold]                show token usage for this session
@@ -120,16 +122,21 @@ class App:
             else:
                 for raw in arg.split():
                     try:
-                        block = load_attachment(raw)
-                        self.session.pending_attachments.append(block)
-                        c.print(f"[green]✓ attached {block.name} "
-                                f"(sent with your next message)[/green]")
+                        c.print(f"[green]✓ attached {self.session.add_file(raw)}[/green]")
                     except AttachmentError as exc:
                         c.print(f"[red]✗ {exc}[/red]")
         elif cmd == "/attachments":
-            pending = [b.name for b in self.session.pending_attachments]
-            sent = [b.name for b in self.session.all_attachments]
-            c.print(f"pending: {pending or '—'}\nsent: {sent or '—'}")
+            pending = [getattr(b, "name", "(data preview)") or "(data preview)"
+                       for b in self.session.pending_attachments]
+            sent = [getattr(b, "name", "(data preview)") or "(data preview)"
+                    for b in self.session.all_attachments]
+            files = [p.name for p in self.session.workspace_files()]
+            c.print(f"pending: {pending or '—'}\nsent: {sent or '—'}\n"
+                    f"workspace files: {files or '—'}")
+        elif cmd == "/workspace":
+            c.print(f"[bold]{self.session.workspace}[/bold]")
+            for p in self.session.workspace_files():
+                c.print(f"  {p.name}  ({p.stat().st_size:,} bytes)")
         elif cmd == "/clear":
             self.session.reset()
             c.print("[green]conversation cleared[/green]")
@@ -237,7 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     app = App(settings)
     for raw in args.attach:
         try:
-            app.session.pending_attachments.append(load_attachment(raw))
+            app.session.add_file(raw)
         except AttachmentError as exc:
             app.console.print(f"[red]{exc}[/red]")
             return 2

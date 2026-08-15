@@ -40,6 +40,9 @@ Homepage = "https://github.com/andreimr/llm_jssp"
 [tool.setuptools.packages.find]
 include = ["optimist", "optimist.*"]
 
+[tool.setuptools.package-data]
+"optimist.recipes" = ["*.md"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]

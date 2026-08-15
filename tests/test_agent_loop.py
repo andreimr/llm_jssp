@@ -155,7 +155,11 @@ def test_usage_accumulates():
 
 
 def make_session() -> Session:
-    return Session(settings=Settings())
+    import tempfile
+    from pathlib import Path
+
+    root = Path(tempfile.mkdtemp(prefix="optimist-test-ws-"))
+    return Session(settings=Settings(workspace_root=root))
 
 
 def test_session_solve_linear_handler():

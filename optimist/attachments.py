@@ -1,4 +1,11 @@
-"""Loading user attachments (PDFs and images) into content blocks."""
+"""Loading user attachments into content blocks and workspace files.
+
+Two kinds of attachment:
+- Documents/images (.pdf, .png, ...) become model-visible content blocks.
+- Data files (.csv, .json, ...) are copied into the session workspace where
+  solver code reads them directly; the model sees a short preview, not the
+  whole file, so instance size is no longer capped by the context window.
+"""
 
 from __future__ import annotations
 
@@ -15,11 +22,33 @@ IMAGE_TYPES = {
     ".webp": "image/webp",
 }
 
+DATA_FILE_TYPES = {".csv", ".tsv", ".json", ".txt", ".md", ".dat"}
+
 MAX_ATTACHMENT_BYTES = 30 * 1024 * 1024
 
 
 class AttachmentError(ValueError):
     pass
+
+
+def is_data_file(path: str | Path) -> bool:
+    return Path(path).suffix.lower() in DATA_FILE_TYPES
+
+
+def data_file_preview(path: Path, max_lines: int = 30, max_chars: int = 2500) -> str:
+    """First lines of a data file, for showing the model its shape."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return f"(unreadable: {exc})"
+    lines = text.splitlines()
+    preview = "\n".join(lines[:max_lines])
+    if len(preview) > max_chars:
+        preview = preview[:max_chars]
+    suffix = ""
+    if len(lines) > max_lines or len(preview) < len(text):
+        suffix = f"\n... ({len(lines)} lines, {len(text)} characters total)"
+    return preview + suffix
 
 
 def extract_pdf_text(data: bytes, max_chars: int = 200_000) -> str:

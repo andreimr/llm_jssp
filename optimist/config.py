@@ -49,6 +49,11 @@ class Settings:
     history_file: Path = field(
         default_factory=lambda: Path("~/.local/share/optimist/history").expanduser()
     )
+    # Each session gets its own working directory under this root; solver code
+    # runs there, attachments are saved there, artifacts persist there.
+    workspace_root: Path = field(
+        default_factory=lambda: Path("~/.local/share/optimist/sessions").expanduser()
+    )
 
     @classmethod
     def load(cls) -> Settings:
@@ -67,6 +72,8 @@ class Settings:
                     setattr(s, key, data[key])
             if isinstance(data.get("show_thinking"), bool):
                 s.show_thinking = data["show_thinking"]
+            if isinstance(data.get("workspace_root"), str):
+                s.workspace_root = Path(data["workspace_root"]).expanduser()
         if os.environ.get("OPTIMIST_MODEL"):
             s.model = os.environ["OPTIMIST_MODEL"]
         if os.environ.get("OPTIMIST_SUBAGENT_MODEL"):

@@ -1,0 +1,28 @@
+{
+  "model": "claude-opus-5",
+  "results": [
+    {
+      "instance": "ft06",
+      "family": "jsp",
+      "known_optimum": 55,
+      "claimed_objective": 55.0,
+      "objective_source": "final_text",
+      "outcome": "optimal",
+      "gap_percent": 0.0,
+      "verdicts": [
+        "VERIFIED"
+      ],
+      "tool_calls": 12,
+      "tool_errors": 0,
+      "wall_s": 165.6,
+      "input_tokens": 49006,
+      "output_tokens": 14504,
+      "cache_read_tokens": 14723,
+      "cache_write_tokens": 6736,
+      "est_cost_usd": 0.657,
+      "final_text_tail": "ends, minimized. Trivial bounds: max job load 47, max machine load 43 (M5) \u2192 LB 47; horizon 197. Optimum 55 sits above both, and matches the known literature optimum for ft06.\n\n**Verification:** independent check re-parsed `ft06.txt`, confirmed all machine assignments, durations, precedences and machine disjointness, recomputed makespan 55, and proved infeasibility at 54 \u2014 VERIFIED.\n\nOBJECTIVE: 55",
+      "error": "",
+      "workspace": "/root/.local/share/optimist/sessions/20260815-043942-hfv2xl4k"
+    }
+  ]
+}

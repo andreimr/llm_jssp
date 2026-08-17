@@ -161,24 +161,29 @@ class App:
 
     def _list_models(self, query: str) -> None:
         table = Table(title="models", show_lines=False)
+        counter = 1
+        table.add_column("#", style="dim", justify="right")
         table.add_column("id", style="bold")
         table.add_column("name", style="dim")
-        for m in get_provider("anthropic").list_models():
-            if query.lower() in m["id"].lower():
-                table.add_row(m["id"], m["name"])
-        try:
-            openrouter = get_provider("openrouter").list_models()
-        except ProviderError:
-            openrouter = []
-        shown = 0
-        for m in openrouter:
-            if query.lower() in m["id"].lower():
-                table.add_row(m["id"], m["name"])
-                shown += 1
-                if shown >= 40 and not query:
-                    table.add_row("…", "(pass a filter to see more, e.g. /models qwen)")
-                    break
+        q = query.lower()
+        failed: list[str] = []
+        for name in ("anthropic", "openrouter"):
+            try:
+                models = sorted(get_provider(name).list_models(), key=lambda m: m["id"])
+            except ProviderError:
+                failed.append(name)
+                continue
+            for m in models:
+                if q in m["id"].lower():
+                    table.add_row(str(counter), m["id"], m["name"])
+                    counter += 1
+        if table.row_count == 0:
+            table.add_row("—", "—", "(no models available)" if failed else "(no matches)")
+        elif not query:
+            table.add_row(" ", " ", "(pass a string to filter by substring matching, e.g. /models qwen)")
         self.console.print(table)
+        for name in failed:
+            self.console.print(f"[yellow]{name}: model list unavailable[/yellow]")
 
     # -- main loop -------------------------------------------------------------
 
